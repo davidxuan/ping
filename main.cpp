@@ -214,60 +214,56 @@ public:
             printf("create socket error\n");
             return;
         }
-#if 0
-        printf("0\n");
-        void* sendbuf=malloc(DEFDATALEN+sizeof(struct icmp6_hdr));
-        void* recvbuf=malloc(DEFDATALEN+sizeof(struct icmp6_hdr));
-        while(1){
-            struct icmp6_hdr *icmpv6=(struct icmp6_hdr *)sendbuf;
-            icmpv6->icmp6_type=ICMP6_ECHO_REQUEST;
-            icmpv6->icmp6_code=0;
-            icmpv6->icmp6_cksum=0;
-            icmpv6->icmp6_seq=seq++;
-            icmpv6->icmp6_id=ICMPID;
-            *(unsigned int*)(&icmpv6->icmp6_data8[4])=gettime();
-            unsigned long long xtime=gettime();
-            if ((DEFDATALEN+sizeof(struct icmp6_hdr))!= sendto(sockfd,sendbuf,DEFDATALEN+sizeof(struct icmp6_hdr), 0,(sockaddr*)&sin6, sizeof(sin6))){
-                printf("send packet error\n");
-            }else{
-                    fd_set fd_socket_set;
-                    struct timeval tv;
-                    int recvflag=0;
-                    FD_ZERO(&fd_socket_set);
-                    FD_SET(sockfd,&fd_socket_set);
-                    tv.tv_sec = 2;
-                    tv.tv_usec = 0;
-                    while(recvflag==0&&(gettime()-xtime)<2000000)
-                        if(select(sockfd+1, &fd_socket_set, NULL, NULL, &tv )>0){
-                            struct sockaddr_in from;
-                            socklen_t fromlen = (socklen_t) sizeof(from);
-                            int c;
+//        void* sendbuf=malloc(DEFDATALEN+sizeof(struct icmp6_hdr));
+//        void* recvbuf=malloc(DEFDATALEN+sizeof(struct icmp6_hdr));
+//        while(1){
+//            struct icmp6_hdr *icmpv6=(struct icmp6_hdr *)sendbuf;
+//            icmpv6->icmp6_type=ICMP6_ECHO_REQUEST;
+//            icmpv6->icmp6_code=0;
+//            icmpv6->icmp6_cksum=0;
+//            icmpv6->icmp6_seq=seq++;
+//            icmpv6->icmp6_id=ICMPID;
+//            *(unsigned int*)(&icmpv6->icmp6_data8[4])=gettime();
+//            unsigned long long xtime=gettime();
+//            if ((DEFDATALEN+sizeof(struct icmp6_hdr))!= sendto(sockfd,sendbuf,DEFDATALEN+sizeof(struct icmp6_hdr), 0,(sockaddr*)&sin6, sizeof(sin6))){
+//                printf("send packet error\n");
+//            }else{
+//                    fd_set fd_socket_set;
+//                    struct timeval tv;
+//                    int recvflag=0;
+//                    FD_ZERO(&fd_socket_set);
+//                    FD_SET(sockfd,&fd_socket_set);
+//                    tv.tv_sec = 2;
+//                    tv.tv_usec = 0;
+//                    while(recvflag==0&&(gettime()-xtime)<2000000)
+//                        if(select(sockfd+1, &fd_socket_set, NULL, NULL, &tv )>0){
+//                            struct sockaddr_in from;
+//                            socklen_t fromlen = (socklen_t) sizeof(from);
+//                            int c;
+//
+//                            c=recvfrom(sockfd,recvbuf,DEFDATALEN+sizeof(struct icmp6_hdr),0,
+//                                    (struct sockaddr *) &from, &fromlen);
+//                            if (c>=DEFDATALEN+sizeof(struct icmp6_hdr)){
+//                                icmpv6=(struct icmp6_hdr *)recvbuf;
+//                                if(icmpv6->icmp6_id==ICMPID &&  icmpv6->icmp6_type==ICMP6_ECHO_REPLY){
+//                                    unsigned int *tp=(unsigned int*)(&icmpv6->icmp6_data8[4]);
+//                                    *tp=gettime()-*tp;
+//                                    printf("RTT time=%d.%dms\n",*tp/1000,*tp%1000);
+//                                    recvflag=1;
+//                                }
+//                            }
+//                        }
+//                    if(recvflag==0)
+//                        printf("packet loss\n");
+//            }
+//            xtime=gettime()-xtime;
+//            if(xtime<2000000)
+//                usleep(2000000-xtime);
+//        }
 
-                            c=recvfrom(sockfd,recvbuf,DEFDATALEN+sizeof(struct icmp6_hdr),0,
-                                    (struct sockaddr *) &from, &fromlen);
-                            if (c>=DEFDATALEN+sizeof(struct icmp6_hdr)){
-                                icmpv6=(struct icmp6_hdr *)recvbuf;
-                                if(icmpv6->icmp6_id==ICMPID &&  icmpv6->icmp6_type==ICMP6_ECHO_REPLY){
-                                    unsigned int *tp=(unsigned int*)(&icmpv6->icmp6_data8[4]);
-                                    *tp=gettime()-*tp;
-                                    printf("RTT time=%d.%dms\n",*tp/1000,*tp%1000);
-                                    recvflag=1;
-                                }
-                            }
-                        }
-                    if(recvflag==0)
-                        printf("packet loss\n");
-            }
-            xtime=gettime()-xtime;
-            if(xtime<2000000)
-                usleep(2000000-xtime);
-        }
-#else
-        printf("else\n");
         struct msghdr msg;
         struct sockaddr_in6 from;
         struct iovec iov;
-        //char control_buf[CMSG_SPACE(36)];
         char control_buf[512];
         sockopt = 1;
         setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &sockopt, sizeof(int));
@@ -336,7 +332,6 @@ public:
             if (xtime < 2000000)
                 usleep(2000000 - xtime);
         }
-#endif
     }
 
     void runLoop() {
